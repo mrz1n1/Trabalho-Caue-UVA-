@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATUEX</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Distressed&display=swap" rel="stylesheet">
+</head>
+
+
+<body>
+
+  <audio id="musica" loop >
+  <source src="musicamatuex.mp3" type="audio/mpeg">
+  
+</audio>
+<header>
+  <img class="logo" src="matuex-removebg-preview.png" alt="Logo MATUEX">
+  <h1>MATUEX</h1>
+  <p>Dark Aesthetic · Peças Exclusivas</p>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#">Início</a></li>
+    <li><a href="#produtos">Produtos</a></li>
+    <li><a href="#foo">Contato</a></li>
+  </ul>
+
+  <div class="nav-cart" onclick="abrirCarrinho()">
+    <img src="carrinho_de_compras_site-removebg-preview.png" alt="Carrinho">
+    <span class="badge" id="badge">0</span>
+  </div>
+</nav>
+
+<main>
+
+  <h2>NOSSA COLEÇÃO</h2>
+  <div class="linha"></div>
+
+  <div class="produtos" id="produtos"></div>
+
+  <div class="banner">
+    <h2>Veste a <span>escuridão</span>,<br>carregue o ritual.</h2>
+    <p>Peças únicas para espíritos singulares</p>
+  </div>
+
+</main>
+
+<footer id="foo">
+     <p> Instagram - <a href="https://www.instagram.com/matue" target="_blank" > @matue </a>  </p> 
+ 
+ <br>    <p>© 2025 MATUEX — Todos os direitos reservados</p>
+</footer>
+
+<!-- PLAYER YOUTUBE OCULTO -->
+<div id="yt-player" style="position:fixed;bottom:-200px;left:-200px;width:1px;height:1px;overflow:hidden;pointer-events:none;"></div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="fecharCarrinho()"></div>
+
+<!-- CARRINHO LATERAL -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h3>CARRINHO</h3>
+    <button onclick="fecharCarrinho()">✕</button>
+  </div>
+  <div class="sidebar-itens" id="sidebar-itens">
+    <p class="vazio">SEU CARRINHO ESTÁ VAZIO</p>
+  </div>
+  <div class="sidebar-footer" id="sidebar-footer" style="display:none">
+    <div class="total">
+      <span>TOTAL</span>
+      <span id="total-valor">R$ 0,00</span>
+    </div>
+    <button onclick="alert('Finalizando compra...')">FINALIZAR COMPRA</button>
+  </div>
+</div>
+
+<script>
+
+var produtos = [
+  {
+    id: 1,
+    nome: "Casaco com Zíper Xtranho",
+    desc: "Algodão pesado, corte largo.",
+    preco: 189.90,
+    img: "casaco matuex.webp"
+  },
+  {
+    id: 2,
+    nome: "Camisa Xtranho Off White",
+    desc: "Drop fit, estampa exclusiva, edição limitada.",
+    preco: 149.90,
+    img: "camisa matuê branca.webp"
+  },
+  {
+    id: 3,
+    nome: "Camisa Xtranho Preta",
+    desc: "Algodão premium, corte oversized.",
+    preco: 149.90,
+    img: "camisa matuê preta.webp"
+  },
+  {
+    id: 4,
+    nome: "Boné Xtranho",
+    desc: "Trucker destroyed, logo bordado.",
+    preco: 119.90,
+    img: "boné matuê preto.webp"
+  },
+  {
+    id: 5,
+    nome: "Regata Xtranho Stunada",
+    desc: "Stone wash, muscle fit, edição única.",
+    preco: 129.90,
+    img: "regata matuê preta.webp"
+  },
+  {
+    id: 6,
+    nome: "Protetor Bucal Xtranho",
+    desc: "Silicone de alta densidade, logo Xtranho.",
+    preco: 89.90,
+    img: "protetor bucal.webp"
+  }
+];
+
+var carrinho = [];
+
+function renderProdutos() {
+  var grid = document.getElementById("produtos");
+  var html = "";
+
+  for (var i = 0; i < produtos.length; i++) {
+    var p = produtos[i];
+
+    html += '<div class="card">';
+
+    if (p.img !== "") {
+      html += '<div class="card-img"><img src="' + p.img + '" alt="' + p.nome + '"></div>';
+    } else {
+      html += '<div class="card-img">[ FOTO DO PRODUTO ]</div>';
+    }
+
+    html += '<div class="card-body">';
+    html += '<h3>' + p.nome + '</h3>';
+    html += '<p>' + p.desc + '</p>';
+    html += '<span class="preco">R$ ' + p.preco.toFixed(2).replace(".", ",") + '</span>';
+    html += '<button onclick="adicionarAoCarrinho(' + p.id + ')">Adicionar</button>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  grid.innerHTML = html;
+}
+
+function adicionarAoCarrinho(id) {
+  var produto = null;
+
+  for (var i = 0; i < produtos.length; i++) {
+    if (produtos[i].id === id) {
+      produto = produtos[i];
+    }
+  }
+
+  var encontrado = false;
+
+  for (var i = 0; i < carrinho.length; i++) {
+    if (carrinho[i].id === id) {
+      carrinho[i].qty++;
+      encontrado = true;
+    }
+  }
+
+  if (!encontrado) {
+    carrinho.push({
+      id: produto.id,
+      nome: produto.nome,
+      preco: produto.preco,
+      qty: 1
+    });
+  }
+
+  atualizarCarrinho();
+  abrirCarrinho();
+}
+
+function removerDoCarrinho(id) {
+  for (var i = 0; i < carrinho.length; i++) {
+    if (carrinho[i].id === id) {
+      if (carrinho[i].qty > 1) {
+        carrinho[i].qty--;
+      } else {
+        carrinho.splice(i, 1);
+      }
+      break;
+    }
+  }
+  atualizarCarrinho();
+}
+
+function atualizarCarrinho() {
+  var total = 0;
+  var count = 0;
+
+  for (var i = 0; i < carrinho.length; i++) {
+    total += carrinho[i].preco * carrinho[i].qty;
+    count += carrinho[i].qty;
+  }
+
+  document.getElementById("badge").textContent = count;
+
+  var itensDiv = document.getElementById("sidebar-itens");
+  var footer = document.getElementById("sidebar-footer");
+
+  if (carrinho.length === 0) {
+    itensDiv.innerHTML = '<p class="vazio">SEU CARRINHO ESTÁ VAZIO</p>';
+    footer.style.display = "none";
+    return;
+  }
+
+  footer.style.display = "block";
+  document.getElementById("total-valor").textContent = "R$ " + total.toFixed(2).replace(".", ",");
+
+  var html = "";
+  for (var i = 0; i < carrinho.length; i++) {
+    var item = carrinho[i];
+    html += '<div class="item-carrinho">';
+    html += '<div class="item-info">';
+    html += '<span class="item-nome">' + item.nome + '</span>';
+    html += '<div class="item-controles">';
+    html += '<button class="btn-qty" onclick="removerDoCarrinho(' + item.id + ')">−</button>';
+    html += '<span class="item-qty">' + item.qty + '</span>';
+    html += '<button class="btn-qty" onclick="adicionarAoCarrinho(' + item.id + ')">+</button>';
+    html += '</div>';
+    html += '</div>';
+    html += '<span class="item-preco">R$ ' + (item.preco * item.qty).toFixed(2).replace(".", ",") + '</span>';
+    html += '</div>';
+  }
+
+  itensDiv.innerHTML = html;
+}
+
+function abrirCarrinho() {
+  document.getElementById("sidebar").classList.add("ativo");
+  document.getElementById("overlay").classList.add("ativo");
+}
+
+function fecharCarrinho() {
+  document.getElementById("sidebar").classList.remove("ativo");
+  document.getElementById("overlay").classList.remove("ativo");
+}
+
+renderProdutos();
+
+</script>  <!-- teste -->
+
+<!-- PLAYER YOUTUBE OCULTO -->
+<div id="yt-player" style="position:fixed;bottom:-200px;left:-200px;width:1px;height:1px;overflow:hidden;pointer-events:none;"></div>
+
+<script>
+  // Carrega a API do YouTube apenas uma vez
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(tag);
+
+  var ytPlayer;
+  var ytPronto = false;
+  var volumeAtual = 20;
+
+  function onYouTubeIframeAPIReady() {
+    ytPlayer = new YT.Player('yt-player', {
+      height: '1',
+      width: '1',
+      videoId: 'oAFogEvbVcc',
+      playerVars: {
+        autoplay: 1,
+        loop: 1,
+        playlist: 'oAFogEvbVcc',
+        controls: 0,
+        mute: 0
+      },
+      events: {
+        'onReady': function(e) {
+          ytPronto = true;
+          e.target.setVolume(volumeAtual);
+          e.target.playVideo();
+          atualizarSliderTrack(volumeAtual / 100);
+        }
+      }
+    });
+  }
+
+  function toggleMusica() {
+    if (!ytPronto) return;
+    var botao = document.getElementById('btn-play');
+    // Verifica o estado do player (YT.PlayerState.PLAYING é igual a 1)
+    if (ytPlayer.getPlayerState() === 1) {
+      ytPlayer.pauseVideo();
+      botao.textContent = '▶';
+    } else {
+      ytPlayer.playVideo();
+      botao.textContent = '⏸';
+    }
+  }
+
+  function mudarVolume(valor) {
+    volumeAtual = Math.round(valor * 100);
+    if (ytPronto) {
+      ytPlayer.setVolume(volumeAtual);
+    }
+    atualizarSliderTrack(valor);
+  }
+
+  function atualizarSliderTrack(valor) {
+    var slider = document.getElementById('vol-slider');
+    if (slider) {
+      slider.style.setProperty('--vol-pct', Math.round(valor * 100) + '%');
+    }
+  }
+</script>
+
+</body>
+</html>
